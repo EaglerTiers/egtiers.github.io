@@ -316,29 +316,52 @@ document.querySelectorAll('input[name="th"]').forEach(function(r){
   });
 });
 renderTabs();render();renderProfileBtn();
-</script>
   <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-analytics.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://gstatic.com";
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCWK0lDgVk8BGYBqXs5Z5UtfWoEfoBiqZ4",
-    authDomain: "egtiers.firebaseapp.com",
-    projectId: "egtiers",
-    storageBucket: "egtiers.firebasestorage.app",
-    messagingSenderId: "337201860832",
-    appId: "1:337201860832:web:be914d52cf975d962b4085",
-    measurementId: "G-70WT8RFT27"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyCWK0lDgVk8BGYBqXs5Z5UtfWoEfoBiqZ4",
+      authDomain: "egtiers.firebaseapp.com",
+      projectId: "egtiers",
+      storageBucket: "egtiers.firebasestorage.app",
+      messagingSenderId: "337201860832",
+      appId: "1:337201860832:web:be914d52cf975d962b4085",
+      measurementId: "G-70WT8RFT27"
+    };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    window.firebaseGoogleLogin = async function () {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        alert("Signed in as " + result.user.displayName);
+        document.querySelectorAll('.ap').forEach(el => el.hidden = true);
+        const profileSetup = document.getElementById('a4');
+        if (profileSetup) profileSetup.hidden = false;
+      } catch (err) {
+        alert("Google Sign-In Error: " + err.code + " - " + err.message);
+      }
+    };
+
+    window.firebaseLogout = async function () {
+      await signOut(auth);
+      alert("Signed out");
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      window.currentFirebaseUser = user || null;
+    });
 </script>
 </body>
 </html>
