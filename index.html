@@ -132,8 +132,7 @@ footer{color:var(--mute);font-size:13px;padding-bottom:40px}
 <div id="a1" class="ap"><h2>Oops, looks like you forgot to sign in!</h2><p class="meta">Sign up or log in to continue.</p>
 <div class="stack"><button class="pri" id="bsu" type="button">Sign up</button><button class="sec" id="blg" type="button">Log in</button></div></div>
 <div id="a2" class="ap" hidden><h2 id="at">Log in</h2><p class="meta">Choose how you want to continue.</p>
-<div class="stack"><button class="sec" onclick="window.firebaseGoogleLogin()"
-type="button"><i style="background:#ea4335"></i>Continue with Google</button>
+<div class="stack"><button class="sec" id="google-login-btn" onclick="window.firebaseGoogleLogin()" type="button"><i style="background:#ea4335"></i>Continue with Google</button>
 <button class="sec" data-p="Email" type="button"><i style="background:var(--mute)"></i>Continue with email</button></div>
 <button class="lnk" data-back="a1" type="button">Back</button></div>
 <div id="a3" class="ap" hidden><h2>Use your email</h2><label for="em">Email address</label><input id="em" type="email" autocomplete="email" placeholder="you@example.com">
