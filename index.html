@@ -1,6 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-analytics.js";
+  import {
+    getAuth, GoogleAuthProvider, OAuthProvider, EmailAuthProvider,
+    signInWithPopup, signOut, onAuthStateChanged, linkWithCredential,
+    createUserWithEmailAndPassword, signInWithEmailAndPassword
+  } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc
+  } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCWK0lDgVk8BGYBqXs5Z5UtfWoEfoBiqZ4",
+    authDomain: "egtiers.firebaseapp.com",
+    projectId: "egtiers",
+    storageBucket: "egtiers.firebasestorage.app",
+    messagingSenderId: "337201860832",
+    appId: "1:337201860832:web:be914d52cf975d962b4085",
+    measurementId: "G-70WT8RFT27"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  window.EG = {
+    auth, db, doc, getDoc, setDoc,
+    GoogleAuthProvider, OAuthProvider, EmailAuthProvider,
+    signInWithPopup, signOut, onAuthStateChanged, linkWithCredential,
+    createUserWithEmailAndPassword, signInWithEmailAndPassword
+  };
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>EaglerTiers</title>
@@ -137,6 +171,7 @@ footer{color:var(--mute);font-size:13px;padding-bottom:40px}
 <button class="sec" data-p="Email" type="button"><i style="background:var(--mute)"></i>Continue with email</button></div>
 <button class="lnk" data-back="a1" type="button">Back</button></div>
 <div id="a3" class="ap" hidden><h2>Use your email</h2><label for="em">Email address</label><input id="em" type="email" autocomplete="email" placeholder="you@example.com">
+<label for="ep">Password</label><input id="ep" type="password" autocomplete="current-password" placeholder="At least 6 characters">
 <div class="stack"><button class="pri" id="ec" type="button">Continue</button></div><button class="lnk" data-back="a2" type="button">Back</button></div>
 <div id="a4" class="ap" hidden><h2>Set up your profile</h2><p class="meta">Tell us who you play as.</p>
 <label for="su">Minecraft username</label><input id="su" maxlength="16" autocomplete="off" placeholder="Steve_123">
@@ -144,10 +179,6 @@ footer{color:var(--mute);font-size:13px;padding-bottom:40px}
 <label for="sr">Region</label><select id="sr"><option value="">Choose a region</option><option>NA</option><option>EU</option><option>AS</option><option>SA</option><option>OC</option></select>
 <label for="sp">Backup password (optional)</label><input id="sp" type="password" autocomplete="new-password"><p class="hint">Preview only: the password isn’t saved anywhere.</p>
 <div class="stack"><button class="pri" id="sc" type="button">Create profile</button></div></div>
-<div id="a5" class="ap" hidden><h2 id="ct">EGtiers is requesting access</h2><p class="meta" id="cs"></p>
-<ul class="perm"><li>See your name and profile picture</li><li>See your email address</li></ul>
-<p class="hint">Preview only: no real account is connected and nothing is shared.</p>
-<div class="stack"><button class="pri" id="cok" type="button">Allow</button><button class="sec" id="cno" type="button">Cancel</button></div></div>
 <p class="anote" id="anote" role="status"></p>
 <div class="afoot"><button class="lnk" id="ax" type="button">Close</button></div></dialog>
 <dialog id="pdlg" aria-label="Your profile"><div class="ap"><h2>Your profile</h2>
@@ -157,7 +188,7 @@ footer{color:var(--mute);font-size:13px;padding-bottom:40px}
 <p class="anote" id="pnote" role="status" style="padding:10px 0 0"></p>
 <div class="stack"><button class="pri" id="ps" type="button">Save changes</button></div></div>
 <div class="afoot"><button class="lnk" id="px" type="button">Close</button></div></dialog>
-<script>
+<script type="module">
 var MODES=["Overall","Sword","Crystal","Pot","Axe","Mace"];
 var TIERS=["HT1","LT1","HT2","LT2","HT3","LT3","HT4","LT4","HT5","LT5"];
 var PTS=[60,44,32,20,10,6,4,3,2,1];
@@ -185,12 +216,9 @@ var ICONS={
 var $=function(id){return document.getElementById(id)};
 function badge(i){return'<span class="badge b'+(Math.floor(i/2)+1)+'">'+TIERS[i]+'</span>'}
 function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
-var consentProv="";
 function acct(n){return profile&&profile.name.toLowerCase()===n.toLowerCase()?profile:null}
 function regOf(p){var a=acct(p.name);return a&&a.region?a.region:p.reg}
 function avHTML(p){var a=acct(p.name),im=a&&a.img;return'<span class="av" style="background:'+(im?'url('+im+') center/cover':p.col)+'">'+(im?'':esc(p.name[0]))+'</span>'}
-$("cok").addEventListener("click",function(){signedIn()});
-$("cno").addEventListener("click",function(){step("a2")});
 function tierOf(p){var m=Object.keys(p.tiers);return mode==="Overall"?(p.overall!==undefined?p.overall:Math.min.apply(null,m.map(function(k){return p.tiers[k]}))):p.tiers[mode]}
 function sections(rows){
   return TIERS.map(function(t,ti){
@@ -235,21 +263,20 @@ $("x").addEventListener("click",function(){$("dlg").close()});
 
 $("sx").addEventListener("click",function(){$("sdlg").close()});
 var authMode="Log in";
-function step(s){["a1","a2","a3","a4","a5"].forEach(function(id){$(id).hidden=id!==s});$("anote").textContent=""}
+function step(s){["a1","a2","a3","a4"].forEach(function(id){$(id).hidden=id!==s});$("anote").textContent=""}
 function pick(m){authMode=m;$("at").textContent=m;step("a2")}
-var user=false;
-try{user=localStorage.getItem("egt")==="1"}catch(e){}
-function setUser(v){user=v;try{localStorage.setItem("egt",v?"1":"0")}catch(e){}}
-var profile=null,tmpImg="",tmpP="";
-try{profile=JSON.parse(localStorage.getItem("egp")||"null")}catch(e){}
-function saveProfile(p){profile=p;try{localStorage.setItem("egp",JSON.stringify(p))}catch(e){}}
+
+var EG=window.EG;
+var auth=EG.auth, db=EG.db;
+var currentUser=null, profile=null, tmpImg="", tmpP="";
+
 function paint(el,img,name){
   if(img){el.style.backgroundImage="url("+img+")";el.textContent=""}
   else{el.style.backgroundImage="";if(name)el.textContent=name[0].toUpperCase();else el.innerHTML=ic('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>')}
 }
 function renderProfileBtn(){
   var b=$("pbtn");
-  if(user&&profile){paint(b,profile.img,profile.name);b.setAttribute("aria-label","Your profile, "+profile.name)}
+  if(currentUser&&profile){paint(b,profile.img,profile.name);b.setAttribute("aria-label","Your profile, "+profile.name)}
   else{paint(b,"","");b.setAttribute("aria-label","Sign in")}
 }
 function readImg(f,cb){
@@ -260,62 +287,136 @@ function readImg(f,cb){
     im.onerror=function(){cb(null)};im.src=r.result};
   r.readAsDataURL(f);
 }
-function finish(){setUser(true);$("adlg").close();renderProfileBtn();render()}
-function signedIn(){
-  if(authMode==="Sign up"||!profile){
-    tmpImg=profile?profile.img:"";$("su").value=profile?profile.name:"";$("sr").value=profile?profile.region:"";$("sp").value="";
-    paint($("sprev"),tmpImg,$("su").value);step("a4");return;
-  }
-  finish();
+async function loadProfile(uid){
+  try{
+    var snap=await EG.getDoc(EG.doc(db,"users",uid));
+    return snap.exists()?snap.data():null;
+  }catch(e){console.error("loadProfile failed",e);return null}
+}
+async function saveProfile(p){
+  profile=p;
+  if(!currentUser)return;
+  try{await EG.setDoc(EG.doc(db,"users",currentUser.uid),p,{merge:true})}
+  catch(e){console.error("saveProfile failed",e)}
 }
 var NAMERE=/^\w{3,16}$/,NAMEERR="Enter your Minecraft username: 3 to 16 letters, numbers, or underscores.";
-$("su").addEventListener("input",function(){if(!tmpImg)paint($("sprev"),"",$("su").value.trim())});
-$("sfile").addEventListener("change",function(){readImg(this.files[0],function(d){if(d){tmpImg=d;paint($("sprev"),d,"")}})});
-$("sc").addEventListener("click",function(){
-  var n=$("su").value.trim();
-  if(!NAMERE.test(n)){$("anote").textContent=NAMEERR;return}
-  if(!$("sr").value){$("anote").textContent="Choose your region.";return}
-  saveProfile({name:n,region:$("sr").value,img:tmpImg||""});
-  finish();
+
+function openAuthDialog(mode){
+  authMode=mode||"Log in";
+  step("a1");
+  $("em").value="";
+  $("adlg").showModal();
+}
+$("theme").addEventListener("click",function(){
+  if(currentUser){$("sdlg").showModal();return}
+  openAuthDialog("Log in");
 });
 $("pbtn").addEventListener("click",function(){
-  if(!user||!profile){authMode="Log in";step("a1");$("em").value="";$("adlg").showModal();return}
+  if(!currentUser||!profile){openAuthDialog("Log in");return}
   tmpP=profile.img||"";$("pu").value=profile.name;$("pr").value=profile.region;$("pnote").textContent="";
   paint($("pprev"),tmpP,profile.name);$("pdlg").showModal();
 });
-$("pu").addEventListener("input",function(){if(!tmpP)paint($("pprev"),"",$("pu").value.trim())});
-$("pfile").addEventListener("change",function(){readImg(this.files[0],function(d){if(d){tmpP=d;paint($("pprev"),d,"")}})});
-$("prm").addEventListener("click",function(){tmpP="";$("pfile").value="";paint($("pprev"),"",$("pu").value.trim())});
-$("ps").addEventListener("click",function(){
-  var n=$("pu").value.trim();
-  if(!NAMERE.test(n)){$("pnote").textContent=NAMEERR;return}
-  saveProfile({name:n,region:$("pr").value,img:tmpP});
-  renderProfileBtn();render();$("pdlg").close();
+$("lo").addEventListener("click",async function(){
+  try{await EG.signOut(auth)}catch(e){console.error(e)}
+  $("sdlg").close();
 });
-$("px").addEventListener("click",function(){$("pdlg").close()});
-$("theme").addEventListener("click",function(){
-  if(user){$("sdlg").showModal();return}
-  step("a1");$("em").value="";$("adlg").showModal();
-});
-$("lo").addEventListener("click",function(){setUser(false);$("sdlg").close();renderProfileBtn()});
 $("bsu").addEventListener("click",function(){pick("Sign up")});
 $("blg").addEventListener("click",function(){pick("Log in")});
 $("ax").addEventListener("click",function(){$("adlg").close()});
 document.querySelectorAll("[data-back]").forEach(function(b){b.addEventListener("click",function(){step(b.dataset.back)})});
-document.querySelectorAll("[data-p]").forEach(function(b){b.addEventListener("click",function(){
-  if(b.dataset.p==="Email"){step("a3");$("em").focus()}
-  else{consentProv=b.dataset.p;$("ct").textContent="EGtiers is requesting access to your "+consentProv+" account";$("cs").textContent="Allow this to "+authMode.toLowerCase()+" with "+consentProv+".";step("a5")}
+
+async function afterAuthSuccess(user){
+  currentUser=user;
+  var existing=await loadProfile(user.uid);
+  if(existing){
+    profile=existing;
+    $("adlg").close();
+    renderProfileBtn();render();
+  }else{
+    tmpImg="";$("su").value=user.displayName||"";$("sr").value="";$("sp").value="";
+    paint($("sprev"),"",$("su").value);
+    step("a4");
+  }
+}
+
+document.querySelectorAll("[data-p]").forEach(function(b){b.addEventListener("click",async function(){
+  $("anote").textContent="";
+  if(b.dataset.p==="Email"){step("a3");$("em").focus();return}
+  var provider = b.dataset.p==="Google" ? new EG.GoogleAuthProvider() : new EG.OAuthProvider("microsoft.com");
+  try{
+    var result=await EG.signInWithPopup(auth,provider);
+    await afterAuthSuccess(result.user);
+  }catch(e){
+    console.error(e);
+    $("anote").textContent="Sign-in failed: "+(e.message||e.code||"please try again.");
+  }
 })});
-$("ec").addEventListener("click",function(){
-  var v=$("em").value.trim();
-  if(/^\S+@\S+\.\S+$/.test(v))signedIn();else $("anote").textContent="Enter a valid email address, like you@example.com.";
+
+$("ec").addEventListener("click",async function(){
+  var v=$("em").value.trim(), pw=$("ep").value;
+  if(!/^\S+@\S+\.\S+$/.test(v)){$("anote").textContent="Enter a valid email address, like you@example.com.";return}
+  if(!pw||pw.length<6){$("anote").textContent="Enter a password of at least 6 characters.";return}
+  try{
+    var cred;
+    if(authMode==="Sign up"){
+      cred=await EG.createUserWithEmailAndPassword(auth,v,pw);
+    }else{
+      cred=await EG.signInWithEmailAndPassword(auth,v,pw);
+    }
+    await afterAuthSuccess(cred.user);
+  }catch(e){
+    console.error(e);
+    $("anote").textContent=(e.message||"Sign-in failed, please try again.");
+  }
 });
+
+$("su").addEventListener("input",function(){if(!tmpImg)paint($("sprev"),"",$("su").value.trim())});
+$("sfile").addEventListener("change",function(){readImg(this.files[0],function(d){if(d){tmpImg=d;paint($("sprev"),d,"")}})});
+$("sc").addEventListener("click",async function(){
+  var n=$("su").value.trim();
+  if(!NAMERE.test(n)){$("anote").textContent=NAMEERR;return}
+  if(!$("sr").value){$("anote").textContent="Choose your region.";return}
+  var pw=$("sp").value;
+  if(pw&&pw.length>=6&&currentUser&&currentUser.email&&EG.EmailAuthProvider&&EG.linkWithCredential){
+    try{
+      var cred=EG.EmailAuthProvider.credential(currentUser.email,pw);
+      await EG.linkWithCredential(currentUser,cred);
+    }catch(e){console.error("backup password link failed",e)}
+  }
+  await saveProfile({name:n,region:$("sr").value,img:tmpImg||""});
+  $("adlg").close();
+  renderProfileBtn();render();
+});
+
+$("pu").addEventListener("input",function(){if(!tmpP)paint($("pprev"),"",$("pu").value.trim())});
+$("pfile").addEventListener("change",function(){readImg(this.files[0],function(d){if(d){tmpP=d;paint($("pprev"),d,"")}})});
+$("prm").addEventListener("click",function(){tmpP="";$("pfile").value="";paint($("pprev"),"",$("pu").value.trim())});
+$("ps").addEventListener("click",async function(){
+  var n=$("pu").value.trim();
+  if(!NAMERE.test(n)){$("pnote").textContent=NAMEERR;return}
+  await saveProfile({name:n,region:$("pr").value,img:tmpP});
+  renderProfileBtn();render();$("pdlg").close();
+});
+$("px").addEventListener("click",function(){$("pdlg").close()});
+
 document.querySelectorAll('input[name="th"]').forEach(function(r){
   r.addEventListener("change",function(){
     var d=document.documentElement;
     if(r.value==="auto")d.removeAttribute("data-theme");else d.dataset.theme=r.value;
   });
 });
+
+EG.onAuthStateChanged(auth, async function(user){
+  currentUser=user;
+  if(user){
+    profile=await loadProfile(user.uid);
+  }else{
+    profile=null;
+  }
+  renderProfileBtn();
+  render();
+});
+
 renderTabs();render();renderProfileBtn();
 </script>
 </body>
