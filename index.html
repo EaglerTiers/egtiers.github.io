@@ -132,7 +132,8 @@ footer{color:var(--mute);font-size:13px;padding-bottom:40px}
 <div id="a1" class="ap"><h2>Oops, looks like you forgot to sign in!</h2><p class="meta">Sign up or log in to continue.</p>
 <div class="stack"><button class="pri" id="bsu" type="button">Sign up</button><button class="sec" id="blg" type="button">Log in</button></div></div>
 <div id="a2" class="ap" hidden><h2 id="at">Log in</h2><p class="meta">Choose how you want to continue.</p>
-<div class="stack"><button class="sec" id="google-login-btn" onclick="window.firebaseGoogleLogin()" type="button"><i style="background:#ea4335"></i>Continue with Google</button>
+<div class="stack"><button class="sec" data-p="Google" type="button"><i style="background:#ea4335"></i>Continue with Google</button>
+<button class="sec" data-p="Microsoft" type="button"><i style="background:#0078d4"></i>Continue with Microsoft</button>
 <button class="sec" data-p="Email" type="button"><i style="background:var(--mute)"></i>Continue with email</button></div>
 <button class="lnk" data-back="a1" type="button">Back</button></div>
 <div id="a3" class="ap" hidden><h2>Use your email</h2><label for="em">Email address</label><input id="em" type="email" autocomplete="email" placeholder="you@example.com">
@@ -316,52 +317,6 @@ document.querySelectorAll('input[name="th"]').forEach(function(r){
   });
 });
 renderTabs();render();renderProfileBtn();
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-analytics.js";
-    import {
-      getAuth,
-      GoogleAuthProvider,
-      signInWithPopup,
-      signOut,
-      onAuthStateChanged
-    } from "https://gstatic.com";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCWK0lDgVk8BGYBqXs5Z5UtfWoEfoBiqZ4",
-      authDomain: "egtiers.firebaseapp.com",
-      projectId: "egtiers",
-      storageBucket: "egtiers.firebasestorage.app",
-      messagingSenderId: "337201860832",
-      appId: "1:337201860832:web:be914d52cf975d962b4085",
-      measurementId: "G-70WT8RFT27"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
-    window.firebaseGoogleLogin = async function () {
-      try {
-        const result = await signInWithPopup(auth, provider);
-        alert("Signed in as " + result.user.displayName);
-        document.querySelectorAll('.ap').forEach(el => el.hidden = true);
-        const profileSetup = document.getElementById('a4');
-        if (profileSetup) profileSetup.hidden = false;
-      } catch (err) {
-        alert("Google Sign-In Error: " + err.code + " - " + err.message);
-      }
-    };
-
-    window.firebaseLogout = async function () {
-      await signOut(auth);
-      alert("Signed out");
-    };
-
-    onAuthStateChanged(auth, (user) => {
-      window.currentFirebaseUser = user || null;
-    });
 </script>
 </body>
 </html>
